@@ -24,7 +24,7 @@ class TimeTableUpdate(TimeTableBase):
 class TimeTableCreate(TimeTableBase):
     title: str
     description: Optional[str]
-    create_user_id: str
+    create_user_id: int
     
 
 # API 반환 데이터
