@@ -20,7 +20,7 @@ def root():
     return "hello world!"
 
 
-@router.get("/timetable/{timetable_id}", response_model=schemas.TimeTable, response_model_exclude_unset=True)
+@router.get("/timetables/{timetable_id}", response_model=schemas.TimeTable, response_model_exclude_unset=True)
 def get_timetable_by_id(
     timetable_id: str,
     db: Session = Depends(deps.get_db)
