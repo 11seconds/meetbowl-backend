@@ -31,6 +31,18 @@ def get_timetable_by_id(
     return timetables
 
 
+@router.get("/timetables/{timetable_id}/scheduleblocks")
+def get_scheduleblocks_by_timetable_id(
+    timetable_id: str,
+    db: Session = Depends(deps.get_db)
+):
+    """
+    타임테이블의 스케쥴 블록 조회
+    """
+    scheduleblock = crud.scheduleblock.get_all(db, table_id=timetable_id)
+    return scheduleblock
+
+
 @router.post("/timetable", response_model=schemas.TimeTable, response_model_exclude=True)
 def create_timetable(
     *,
