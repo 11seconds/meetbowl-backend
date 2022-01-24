@@ -60,3 +60,18 @@ def update_timetable_by_id(
     """
     timetable = crud.timetable.update(db, obj_in=timetable_in)
     return timetable
+
+
+
+@router.post("/scheduleblock")
+def create_scheduleblock(
+    *,
+    db: Session = Depends(deps.get_db),
+    scheduleblock_in: schemas.ScheduleBlockCreate
+):
+    """
+    스케쥴 블록 생성 로직 Array로 받아서 한번에 넣어줘야 하나 고민...
+    일단 하나만 생성하는 것 만들기로 함
+    """
+    scheduleblock = crud.scheduleblock.create(db, obj_in=scheduleblock_in)
+    return scheduleblock
