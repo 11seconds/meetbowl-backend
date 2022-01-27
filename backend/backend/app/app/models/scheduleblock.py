@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class ScheduleBlock(Base):
     id = Column(String, primary_key=True, index=True)
     table_id = Column(String, ForeignKey("timetable.id"))
-    user_id = Column(Integer, ForeignKey("user.id"))
+    user_id = Column(String, ForeignKey("user.id"))
     start_datetime = Column(DateTime)
     end_datetime = Column(DateTime)
     label = Column(String)

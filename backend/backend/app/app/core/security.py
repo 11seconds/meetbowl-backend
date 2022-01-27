@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Any, Union
+from uuid import uuid4
 
 from jose import jwt
 from passlib.context import CryptContext
@@ -32,3 +33,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
+
+def create_uuid():
+    uuid = str(uuid4()).split("-")
+    return uuid[2]+uuid[1]+uuid[0]+uuid[3]+uuid[4]

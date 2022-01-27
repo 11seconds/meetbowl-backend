@@ -6,10 +6,9 @@ from pydantic import BaseModel
 
 # Shared properties
 class TimeTableBase(BaseModel):
-    id: str
     title: str
     description: Optional[str] = None
-    create_user_id: int
+    create_user_id: str
 
 
 #업데이트시 받을 데이터
@@ -24,11 +23,11 @@ class TimeTableUpdate(TimeTableBase):
 class TimeTableCreate(TimeTableBase):
     title: str
     description: Optional[str]
-    create_user_id: int
+    create_user_id: str
     
 
 # API 반환 데이터
 class TimeTable(TimeTableBase):
-    pass
+    id: str
     class Config:
         orm_mode = True
