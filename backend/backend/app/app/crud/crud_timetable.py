@@ -7,13 +7,13 @@ from app.crud.base import CRUDBase
 from app.models.timetable import TimeTable
 from app.schemas.timetable import TimeTableCreate, TimeTableUpdate
 
-from uuid import uuid4
+from app.core.security import create_uuid
 
 
 class CRUDTimeTable(CRUDBase[TimeTable, TimeTableCreate, TimeTableUpdate]):
     def create(self, db: Session, *, obj_in: TimeTableCreate) -> TimeTable:
         db_obj = TimeTable(
-            id= str(uuid4()),
+            id=create_uuid(),
             title= obj_in.title,
             description= obj_in.description,
             create_user_id= obj_in.create_user_id
