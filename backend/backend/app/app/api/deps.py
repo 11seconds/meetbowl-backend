@@ -60,15 +60,3 @@ def get_current_active_superuser(
             status_code=400, detail="The user doesn't have enough privileges"
         )
     return current_user
-
-
-def get_kakao_token(code: str) -> str:
-    headers = {"Content-type":"application/x-www-form-urlencoded;charset=utf-8"}
-    params = {
-        "grant_type": "authorization_code",
-        "client_id": "269dbb55289227dd491bc30d0bc22870",
-        "redirect_uri": "https://머시기//user/kakao",
-        "code": code
-    }
-    response = requests.post("https://kauth.kakao.com/oauth/token", headers=headers, params=params)
-    return response.json().access_token
