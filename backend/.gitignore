@@ -5,3 +5,4 @@ docker-stack.yml
 /venv
 .DS_STORE
 .git
+.env
