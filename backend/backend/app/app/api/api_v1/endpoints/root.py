@@ -63,9 +63,9 @@ def root():
     return HTMLResponse(html)
 
 
-@router.get("/user/login")
-def user_kakao(*, db: Session, code: str):
-    return ""
+# @router.get("/user/login")
+# def user_kakao(*, db: Session, code: str):
+#     return ""
 
 
 @router.get("/timetables/{timetable_id}", response_model=schemas.TimeTable, response_model_exclude_unset=True)
