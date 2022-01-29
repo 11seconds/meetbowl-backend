@@ -15,6 +15,6 @@ class User(Base):
     hashed_password = Column(String, nullable=True)
     kakao_id = Column(Integer, nullable=True)
     nickname = Column(String, nullable=True)
-    is_active = Column(Boolean(), default=True)
+    is_active = Column(Boolean(), default=False)
     is_superuser = Column(Boolean(), default=False)
     timetables = relationship("TimeTable", back_populates="owner")
