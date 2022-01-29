@@ -1,15 +1,26 @@
+from datetime import timedelta
 from typing import Any, List, Dict
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, Body
 
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
+import requests
 
 from app import crud, models, schemas
 from app.api import deps
 from app.models import timetable, scheduleblock, user
+from app.core import security
+from app.core.config import settings
+from app.core.security import get_password_hash
+from app.utils import (
+    generate_password_reset_token,
+    send_reset_password_email,
+    verify_password_reset_token,
+)
+
 
 
 router = APIRouter()
@@ -63,9 +74,57 @@ def root():
     return HTMLResponse(html)
 
 
-# @router.get("/user/login")
-# def user_kakao(*, db: Session, code: str):
-#     return ""
+@router.post("/user/login", response_model=schemas.Token)
+def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
+    
+    headers = {
+        "Content-type":"application/x-www-form-urlencoded;charset=utf-8"
+        }
+    params = {
+        "grant_type": "authorization_code",
+        "client_id": settings.KAKAO_APP_KEY,
+        "redirect_uri": "http://localhost:3000/authorization",
+        "code": code.code
+    }
+    
+    kakao_access_token = requests.post(
+        "https://kauth.kakao.com/oauth/token",
+        headers=headers,
+        params=params).json()
+    if not kakao_access_token.get('access_token'):
+        raise HTTPException(status_code=400, detail="Incorrect code")
+    
+    headers2 = {
+        "Content-type":"application/x-www-form-urlencoded;charset=utf-8",
+        "Authorization": "Bearer "+ kakao_access_token['access_token']
+        }
+    
+    kakao_user = requests.post(
+        "https://kapi.kakao.com/v2/user/me",
+        headers=headers2).json()
+
+    if not kakao_user.get('id'):
+        raise HTTPException(status_code=500, detail="Get id error")
+    
+    user = crud.user.get_by_kakao_id(db, kakao_id=kakao_user.get('id'))
+    
+    if user:
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        return {
+            "access_token": security.create_access_token(
+                user.id, expires_delta=access_token_expires
+            ),
+            "token_type": "bearer",
+        }
+    elif not user:
+        created_user = crud.user.create_by_kakao_id(db, kakao_id=kakao_user.get('id'), nickname=kakao_user.get('properties').get('nickname'))
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        return {
+            "access_token": security.create_access_token(
+                created_user.id, expires_delta=access_token_expires
+            ),
+            "token_type": "bearer",
+        }
 
 
 @router.get("/timetables/{timetable_id}", response_model=schemas.TimeTable, response_model_exclude_unset=True)
@@ -147,12 +206,14 @@ def create_scheduleblock(
 @router.put("/scheduleblock")
 def update_scheduleblock_by_id(
     *,
+    scheduleblock_id: str,
     db: Session = Depends(deps.get_db),
     scheduleblock_in: schemas.ScheduleBlockUpdate
 ):
     """ 스케쥴 블록 수정
     """
-    scheduleblock = crud.scheduleblock.update(db, obj_in=scheduleblock_in)
+    scheduleblock_db = crud.scheduleblock.get(db, id=scheduleblock_id)
+    scheduleblock = crud.scheduleblock.update(db, db_obj=scheduleblock_db ,obj_in=scheduleblock_in)
     return scheduleblock
 
 
