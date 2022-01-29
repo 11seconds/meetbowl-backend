@@ -6,3 +6,4 @@ docker-stack.yml
 .DS_STORE
 .git
 .env
+cookiecutter-config-file.yml
