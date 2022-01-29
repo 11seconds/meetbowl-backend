@@ -7,6 +7,7 @@ from uuid import uuid4
 # Shared properties
 class UserBase(BaseModel):
     email: Optional[EmailStr] = None
+    nickname: Optional[str] = None
     is_active: Optional[bool] = True
     is_superuser: bool = False
 
@@ -36,3 +37,4 @@ class User(UserInDBBase):
 # Additional properties stored in DB
 class UserInDB(UserInDBBase):
     hashed_password: str
+    kakao_id: int
