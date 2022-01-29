@@ -1,9 +1,2 @@
-.vscode
-.mypy_cache
-docker-stack.yml
-.idea
-/venv
-.DS_STORE
-.git
-.env
-cookiecutter-config-file.yml
+__pycache__
+app.egg-info
