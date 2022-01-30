@@ -14,9 +14,11 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         return db.query(User).filter(User.email == email).first()
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
+        if not obj_in.password:
+            obj_in.password = create_uuid()
         db_obj = User(
             email=obj_in.email,
-            hashed_password=get_password_hash(create_uuid()),
+            hashed_password=get_password_hash(obj_in.password),
             id=create_uuid(),
             is_superuser=obj_in.is_superuser,
         )
