@@ -232,7 +232,6 @@ def create_scheduleblock(
 @router.put("/scheduleblock", status_code=201)
 def update_scheduleblock_by_id(
     *,
-    scheduleblock_id: str,
     db: Session = Depends(deps.get_db),
     scheduleblock_in: schemas.ScheduleBlockUpdate,
     current_user: schemas.User = Depends(deps.get_current_user),
@@ -241,7 +240,7 @@ def update_scheduleblock_by_id(
     """ 스케쥴 블록 수정
     JWT 필요
     """
-    scheduleblock_db = crud.scheduleblock.get(db, id=scheduleblock_id)
+    scheduleblock_db = crud.scheduleblock.get(db, id=scheduleblock_in.id)
     
     if scheduleblock_db.user_id != current_user.id:
         raise HTTPException(

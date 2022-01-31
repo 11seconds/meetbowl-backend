@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 # Shared properties
 class ScheduleBlockBase(BaseModel):
+    id: str
     table_id: str
     start_datetime: Optional[datetime] = None
     end_datetime: Optional[datetime] = None
@@ -27,7 +28,6 @@ class ScheduleBlockCreate(ScheduleBlockBase):
     
     
 class ScheduleBlockInDBBase(ScheduleBlockBase):
-    id: str
     created_at: datetime
     class config:
         orm_mode=True
