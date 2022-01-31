@@ -95,7 +95,7 @@ def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
         headers=headers,
         params=params).json()
     if not kakao_access_token.get('access_token'):
-        raise HTTPException(status_code=400, detail="Incorrect code")
+        raise HTTPException(status_code=401, detail="Incorrect code")
     
     headers2 = {
         "Content-type":"application/x-www-form-urlencoded;charset=utf-8",
@@ -107,7 +107,7 @@ def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
         headers=headers2).json()
 
     if not kakao_user.get('id'):
-        raise HTTPException(status_code=500, detail="Get id error")
+        raise HTTPException(status_code=500, detail="Get kakao id error")
     
     user = crud.user.get_by_kakao_id(db, kakao_id=kakao_user.get('id'))
     
@@ -152,6 +152,8 @@ def get_timetable_by_id(
     타임테이블 정보 보기
     """
     timetables = crud.timetable.get(db, id=timetable_id)
+    if not timetable:
+        raise HTTPException(status_code=404, detail="Timetable not found")
     return timetables
     
 
@@ -165,10 +167,12 @@ def get_scheduleblocks_by_timetable_id(
     타임테이블의 스케쥴 블록 조회
     """
     scheduleblock = crud.scheduleblock.get_all(db, table_id=timetable_id)
+    if not scheduleblock:
+        raise HTTPException(status_code=404, detail="Timetable not found")
     return scheduleblock
 
 
-@router.post("/timetable", response_model=schemas.TimeTable, response_model_exclude_unset=True)
+@router.post("/timetable", response_model=schemas.TimeTable, response_model_exclude_unset=True, status_code=201)
 def create_timetable(
     *,
     db: Session = Depends(deps.get_db),
@@ -178,10 +182,12 @@ def create_timetable(
     타임테이블 생성
     """
     timetable = crud.timetable.create(db, obj_in=timetable_in)
+    if not timetable:
+        raise HTTPException(status_code=500, detail="Timetable is not created")
     return timetable
 
 
-@router.put("/timetable", response_model=schemas.TimeTable)
+@router.put("/timetable", response_model=schemas.TimeTable, status_code=201)
 def update_timetable_by_id(
     *,
     timetable_id: str,
@@ -198,14 +204,14 @@ def update_timetable_by_id(
     timetable = crud.timetable.get(db, timetable_id)
     
     if timetable.create_user_id != current_user.id:
-        raise HTTPException(status_code=400, detail="The user doesn't have enough privileges")
-        
+        raise HTTPException(status_code=403, detail="The user doesn't have enough privileges")
+    
     timetable = crud.timetable.update(db, obj_in=timetable_in)
     return timetable
 
 
 
-@router.post("/scheduleblock", response_model=schemas.ScheduleBlock)
+@router.post("/scheduleblock", response_model=schemas.ScheduleBlock, status_code=201)
 def create_scheduleblock(
     *,
     db: Session = Depends(deps.get_db),
@@ -218,7 +224,7 @@ def create_scheduleblock(
     return scheduleblock
 
 
-@router.put("/scheduleblock")
+@router.put("/scheduleblock", status_code=201)
 def update_scheduleblock_by_id(
     *,
     scheduleblock_id: str,
@@ -234,7 +240,7 @@ def update_scheduleblock_by_id(
     
     if scheduleblock_db.user_id != current_user.id:
         raise HTTPException(
-            status_code=400, detail="The user doesn't have enough privileges"
+            status_code=403, detail="The user doesn't have enough privileges"
         )
     
     scheduleblock = crud.scheduleblock.update(db, db_obj=scheduleblock_db ,obj_in=scheduleblock_in)
