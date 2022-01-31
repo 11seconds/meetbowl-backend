@@ -252,6 +252,24 @@ def update_scheduleblock_by_id(
     return scheduleblock
 
 
+@router.delete("/scheduleblock/{scheduleblock_id}")
+def delete_scheduleblock_by_id(
+    scheduleblock_id: str,
+    db: Session = Depends(deps.get_db),
+    *,
+    current_user: schemas.User = Depends(deps.get_current_user)
+):
+    scheduleblock_db = crud.scheduleblock.get(db, id=scheduleblock_id)
+    if scheduleblock_db.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403, detail="The user doesn't have enough privileges"
+        )
+    
+    _return = crud.scheduleblock.remove(db, id=scheduleblock_db.id)
+
+    return _return
+
+
 class ConnectionManager:
     def __init__(self):
         self.connections: List[WebSocket] = []
