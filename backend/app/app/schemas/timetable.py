@@ -1,4 +1,5 @@
 from pydoc import describe
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel
@@ -8,13 +9,11 @@ from pydantic import BaseModel
 class TimeTableBase(BaseModel):
     title: str
     description: Optional[str] = None
-    create_user_id: str
 
 
 #업데이트시 받을 데이터
 class TimeTableUpdate(TimeTableBase):
     id: str
-    create_user_id: str
     title: str
     description: Optional[str]
 
@@ -23,11 +22,18 @@ class TimeTableUpdate(TimeTableBase):
 class TimeTableCreate(TimeTableBase):
     title: str
     description: Optional[str]
-    create_user_id: str
     
 
-# API 반환 데이터
-class TimeTable(TimeTableBase):
+class TimeTableInDBBase(TimeTableBase):
     id: str
     class Config:
         orm_mode = True
+
+
+# API 반환 데이터
+class TimeTable(TimeTableInDBBase):
+    pass
+
+class TimeTableInDB(TimeTableInDBBase):
+    created_at: datetime
+    create_user_id: str

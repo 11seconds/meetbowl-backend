@@ -176,11 +176,14 @@ def get_scheduleblocks_by_timetable_id(
 def create_timetable(
     *,
     db: Session = Depends(deps.get_db),
-    timetable_in: schemas.TimeTableCreate
+    timetable_in: schemas.TimeTableCreate,
+    current_user: schemas.User = Depends(deps.get_current_user),
+    Authorization = Header(None)
 ):
     """
     타임테이블 생성
     """
+    timetable_in['create_user_id'] = current_user.id
     timetable = crud.timetable.create(db, obj_in=timetable_in)
     if not timetable:
         raise HTTPException(status_code=500, detail="Timetable is not created")
@@ -190,7 +193,6 @@ def create_timetable(
 @router.put("/timetable", response_model=schemas.TimeTable, status_code=201)
 def update_timetable_by_id(
     *,
-    timetable_id: str,
     db: Session = Depends(deps.get_db),
     timetable_in: schemas.TimeTableUpdate,
     current_user: models.User = Depends(deps.get_current_user),
@@ -200,12 +202,12 @@ def update_timetable_by_id(
     시간표 정보 수정
     JWT 필요
     """
-    
-    timetable = crud.timetable.get(db, timetable_id)
+    timetable = crud.timetable.get(db, timetable_in.id)
     
     if timetable.create_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="The user doesn't have enough privileges")
     
+    timetable_in['create_user_id'] = current_user.id
     timetable = crud.timetable.update(db, obj_in=timetable_in)
     return timetable
 
@@ -215,11 +217,14 @@ def update_timetable_by_id(
 def create_scheduleblock(
     *,
     db: Session = Depends(deps.get_db),
-    scheduleblock_in: schemas.ScheduleBlockCreate
+    scheduleblock_in: schemas.ScheduleBlockCreate,
+    current_user: models.User = Depends(deps.get_current_user),
+    Authorization = Header(None)
 ):
     """
     스케쥴 블록 생성 API
     """
+    scheduleblock_in['user_id'] = current_user.id
     scheduleblock = crud.scheduleblock.create(db, obj_in=scheduleblock_in)
     return scheduleblock
 
