@@ -1,16 +1,20 @@
 from typing import Generator
+from urllib import request
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status, Header
+from fastapi.security import OAuth2PasswordBearer, OAuth2
+from fastapi.security.utils import get_authorization_scheme_param
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 import requests
+from starlette.requests import Request
 
 from app import crud, models, schemas
 from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
+from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
@@ -24,21 +28,34 @@ def get_db() -> Generator:
     finally:
         db.close()
 
+def get_token(request: Request):
+    authorization: str = request.headers.get("Authorization")
+    scheme, param = get_authorization_scheme_param(authorization)
+    if not authorization or scheme.lower() != "bearer":
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return param
+
 
 def get_current_user(
-    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
+    request: Request,
+    db: Session = Depends(get_db)
 ) -> models.User:
+    token = get_token(request)
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
-        token_data = schemas.TokenPayload(**payload)
+        id = payload.get("sub")
     except (jwt.JWTError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
-    user = crud.user.get(db, id=token_data.sub)
+    user = crud.user.get(db, id=id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user

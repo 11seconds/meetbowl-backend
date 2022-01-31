@@ -1,13 +1,15 @@
 from datetime import timedelta
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
+from urllib import request
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, Body
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, Body, Header
 
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
 import requests
+from starlette.requests import Request
 
 from app import crud, models, schemas
 from app.api import deps
@@ -20,6 +22,7 @@ from app.utils import (
     send_reset_password_email,
     verify_password_reset_token,
 )
+from app.core.config import settings
 
 
 
@@ -126,6 +129,19 @@ def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
             "token_type": "bearer",
         }
 
+@router.get("/user/me", response_model=schemas.User)
+def get_user_me(
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(deps.get_current_user),
+    Authorization = Header(None)
+):
+    """
+    본인 유저 정보 조회
+    
+    JWT 필요
+    """
+    return current_user
+
 
 @router.get("/timetables/{timetable_id}", response_model=schemas.TimeTable, response_model_exclude_unset=True)
 def get_timetable_by_id(
@@ -137,19 +153,6 @@ def get_timetable_by_id(
     """
     timetables = crud.timetable.get(db, id=timetable_id)
     return timetables
-
-
-@router.post("/users/join", response_model=schemas.User)
-def user_join(*, db: Session = Depends(deps.get_db), user_in: schemas.UserCreate):
-    """
-    유저 생성 API -> 유저 아이디 반환
-    
-    유저 아이디 값으로 vailidation 합니다.
-    
-    password, email은 선택입니다.
-    """
-    user = crud.user.create(db, obj_in=user_in)
-    return user
     
 
 
@@ -171,26 +174,38 @@ def create_timetable(
     db: Session = Depends(deps.get_db),
     timetable_in: schemas.TimeTableCreate
 ):
+    """
+    타임테이블 생성
+    """
     timetable = crud.timetable.create(db, obj_in=timetable_in)
     return timetable
 
 
-@router.put("/timetable")
+@router.put("/timetable", response_model=schemas.TimeTable)
 def update_timetable_by_id(
     *,
     timetable_id: str,
     db: Session = Depends(deps.get_db),
-    timetable_in: schemas.TimeTableUpdate
+    timetable_in: schemas.TimeTableUpdate,
+    current_user: models.User = Depends(deps.get_current_user),
+    Authorization = Header(None)
 ):
     """
     시간표 정보 수정
+    JWT 필요
     """
+    
+    timetable = crud.timetable.get(db, timetable_id)
+    
+    if timetable.create_user_id != current_user.id:
+        raise HTTPException(status_code=400, detail="The user doesn't have enough privileges")
+        
     timetable = crud.timetable.update(db, obj_in=timetable_in)
     return timetable
 
 
 
-@router.post("/scheduleblock")
+@router.post("/scheduleblock", response_model=schemas.ScheduleBlock)
 def create_scheduleblock(
     *,
     db: Session = Depends(deps.get_db),
@@ -208,11 +223,20 @@ def update_scheduleblock_by_id(
     *,
     scheduleblock_id: str,
     db: Session = Depends(deps.get_db),
-    scheduleblock_in: schemas.ScheduleBlockUpdate
+    scheduleblock_in: schemas.ScheduleBlockUpdate,
+    current_user: schemas.User = Depends(deps.get_current_user),
+    Authorization = Header(None)
 ):
     """ 스케쥴 블록 수정
+    JWT 필요
     """
     scheduleblock_db = crud.scheduleblock.get(db, id=scheduleblock_id)
+    
+    if scheduleblock_db.user_id != current_user.id:
+        raise HTTPException(
+            status_code=400, detail="The user doesn't have enough privileges"
+        )
+    
     scheduleblock = crud.scheduleblock.update(db, db_obj=scheduleblock_db ,obj_in=scheduleblock_in)
     return scheduleblock
 
