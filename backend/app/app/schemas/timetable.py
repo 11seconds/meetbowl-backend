@@ -7,13 +7,12 @@ from pydantic import BaseModel
 
 # Shared properties
 class TimeTableBase(BaseModel):
-    title: str
+    title: Optional[str]
     description: Optional[str] = None
 
 
 #업데이트시 받을 데이터
 class TimeTableUpdate(TimeTableBase):
-    id: str
     title: str
     description: Optional[str]
 
@@ -26,6 +25,7 @@ class TimeTableCreate(TimeTableBase):
 
 class TimeTableInDBBase(TimeTableBase):
     id: str
+    create_user_id: str
     class Config:
         orm_mode = True
 
@@ -36,4 +36,3 @@ class TimeTable(TimeTableInDBBase):
 
 class TimeTableInDB(TimeTableInDBBase):
     created_at: datetime
-    create_user_id: str

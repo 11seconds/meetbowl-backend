@@ -143,7 +143,7 @@ def get_user_me(
     return current_user
 
 
-@router.put("/users/me", response_model=schemas.User)
+@router.patch("/users/me", response_model=schemas.User)
 def update_user_me(
     *,
     db: Session = Depends(deps.get_db),
@@ -203,17 +203,17 @@ def create_timetable(
     """
     타임테이블 생성
     """
-    timetable_in['create_user_id'] = current_user.id
-    timetable = crud.timetable.create(db, obj_in=timetable_in)
+    timetable = crud.timetable.create(db, obj_in=timetable_in, user_id=current_user.id)
     if not timetable:
         raise HTTPException(status_code=500, detail="Timetable is not created")
     return timetable
 
 
-@router.put("/timetables", response_model=schemas.TimeTable, status_code=201)
+@router.patch("/timetables/{timetable_id}", response_model=schemas.TimeTable, status_code=201)
 def update_timetable_by_id(
     *,
     db: Session = Depends(deps.get_db),
+    timetable_id: str,
     timetable_in: schemas.TimeTableUpdate,
     current_user: models.User = Depends(deps.get_current_user),
     Authorization = Header(None)
@@ -222,13 +222,12 @@ def update_timetable_by_id(
     시간표 정보 수정
     JWT 필요
     """
-    timetable = crud.timetable.get(db, timetable_in.id)
+    timetable = crud.timetable.get(db, timetable_id)
     
     if timetable.create_user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="The user doesn't have enough privileges")
+        raise HTTPException(status_code=403, detail="The user doesn't have enough privileges. Only timetable owner can update info.")
     
-    timetable_in['create_user_id'] = current_user.id
-    timetable = crud.timetable.update(db, obj_in=timetable_in)
+    timetable = crud.timetable.update(db, db_obj=timetable ,obj_in=timetable_in)
     return timetable
 
 
@@ -252,7 +251,7 @@ def create_scheduleblock(
     return scheduleblocks
 
 
-@router.put("/scheduleblocks", status_code=201)
+@router.patch("/scheduleblocks", status_code=201)
 def update_scheduleblock_by_id(
     *,
     db: Session = Depends(deps.get_db),
