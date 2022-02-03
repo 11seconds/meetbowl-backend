@@ -14,3 +14,7 @@ class TokenPayload(BaseModel):
 
 class Code(BaseModel):
     code: str
+
+
+class Authorization(BaseModel):
+    Authorization: str
