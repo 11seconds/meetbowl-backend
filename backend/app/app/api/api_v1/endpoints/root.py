@@ -217,38 +217,45 @@ def update_timetable_by_id(
 def create_scheduleblock(
     *,
     db: Session = Depends(deps.get_db),
-    scheduleblock_in: schemas.ScheduleBlockCreate,
+    scheduleblocks_in: List[schemas.ScheduleBlockCreate],
     current_user: models.User = Depends(deps.get_current_user),
     Authorization = Header(None)
 ):
     """
     스케쥴 블록 생성 API
     """
-    scheduleblock_in['user_id'] = current_user.id
-    scheduleblock = crud.scheduleblock.create(db, obj_in=scheduleblock_in)
-    return scheduleblock
+    scheduleblocks = []
+    for scheduleblock_in in scheduleblocks_in:
+        scheduleblock_in['user_id'] = current_user.id
+        scheduleblocks.append(crud.scheduleblock.create(db, obj_in=scheduleblock_in))
+    
+    return scheduleblocks
 
 
 @router.put("/scheduleblock", status_code=201)
 def update_scheduleblock_by_id(
     *,
     db: Session = Depends(deps.get_db),
-    scheduleblock_in: schemas.ScheduleBlockUpdate,
+    scheduleblocks_in: List[schemas.ScheduleBlockUpdate],
     current_user: schemas.User = Depends(deps.get_current_user),
     Authorization = Header(None)
 ):
     """ 스케쥴 블록 수정
     JWT 필요
     """
-    scheduleblock_db = crud.scheduleblock.get(db, id=scheduleblock_in.id)
+
+    scheduleblocks = []
+
+    for scheduleblock_in in scheduleblocks_in:
+        scheduleblock_db = crud.scheduleblock.get(db, id=scheduleblock_in.id)
     
-    if scheduleblock_db.user_id != current_user.id:
-        raise HTTPException(
-            status_code=403, detail="The user doesn't have enough privileges"
-        )
-    
-    scheduleblock = crud.scheduleblock.update(db, db_obj=scheduleblock_db ,obj_in=scheduleblock_in)
-    return scheduleblock
+        if scheduleblock_db.user_id != current_user.id:
+            raise HTTPException(
+                status_code=403, detail="The user doesn't have enough privileges"
+            )
+        
+        scheduleblocks.append(crud.scheduleblock.update(db, db_obj=scheduleblock_db ,obj_in=scheduleblock_in))
+    return scheduleblocks
 
 
 @router.delete("/scheduleblock/{scheduleblock_id}")
