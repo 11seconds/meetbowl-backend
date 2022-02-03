@@ -157,6 +157,9 @@ def update_user_me(
     JWT 필요
     """
     
+    if user_in.nickname != None and user_in.nickname == "":
+        raise HTTPException(status_code=400, detail="Nickname must not be empty string")
+    
     user = crud.user.get(db, id=current_user.id)
     user = crud.user.update(db, db_obj=user, obj_in=user_in)
     

@@ -8,22 +8,21 @@ from uuid import uuid4
 class UserBase(BaseModel):
     email: Optional[EmailStr] = None
     nickname: Optional[str] = None
-    is_active: Optional[bool] = True
 
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     email: Optional[EmailStr] = None
-    password: Optional[str] = None
     
 
 # Properties to receive via API on update
 class UserUpdate(UserBase):
-    password: Optional[str] = None
+    nickname: Optional[str]
 
 
 class UserInDBBase(UserBase):
     id: str
+    is_active: bool
     class Config:
         orm_mode = True
 
