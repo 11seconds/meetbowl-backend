@@ -86,7 +86,7 @@ def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
     params = {
         "grant_type": "authorization_code",
         "client_id": settings.KAKAO_APP_KEY,
-        "redirect_uri": "http://localhost:3000/authorization",
+        "redirect_uri": code.redirect_uri,
         "code": code.code
     }
     

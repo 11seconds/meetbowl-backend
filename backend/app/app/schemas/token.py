@@ -14,6 +14,7 @@ class TokenPayload(BaseModel):
 
 class Code(BaseModel):
     code: str
+    redirect_uri: str
 
 
 class Authorization(BaseModel):
