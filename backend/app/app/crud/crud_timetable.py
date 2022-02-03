@@ -11,12 +11,12 @@ from app.core.security import create_uuid
 
 
 class CRUDTimeTable(CRUDBase[TimeTable, TimeTableCreate, TimeTableUpdate]):
-    def create(self, db: Session, *, obj_in: TimeTableCreate) -> TimeTable:
+    def create(self, db: Session, *, obj_in: TimeTableCreate, user_id: str) -> TimeTable:
         db_obj = TimeTable(
             id=create_uuid(),
             title= obj_in.title,
             description= obj_in.description,
-            create_user_id= obj_in.create_user_id
+            create_user_id= user_id
         )
         db.add(db_obj)
         db.commit()
