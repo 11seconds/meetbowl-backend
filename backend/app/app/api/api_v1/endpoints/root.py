@@ -77,7 +77,7 @@ def root():
     return HTMLResponse(html)
 
 
-@router.post("/user/login", response_model=schemas.Token)
+@router.post("/users/login", response_model=schemas.Token)
 def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
     
     headers = {
@@ -129,7 +129,7 @@ def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
             "token_type": "bearer",
         }
 
-@router.get("/user/me", response_model=schemas.User)
+@router.get("/users/me", response_model=schemas.User)
 def get_user_me(
     db: Session = Depends(deps.get_db),
     current_user: schemas.User = Depends(deps.get_current_user),
@@ -143,7 +143,7 @@ def get_user_me(
     return current_user
 
 
-@router.put("/user/me", response_model=schemas.User)
+@router.put("/users/me", response_model=schemas.User)
 def get_user_me(
     *,
     db: Session = Depends(deps.get_db),
@@ -192,7 +192,7 @@ def get_scheduleblocks_by_timetable_id(
     return scheduleblock
 
 
-@router.post("/timetable", response_model=schemas.TimeTable, response_model_exclude_unset=True, status_code=201)
+@router.post("/timetables", response_model=schemas.TimeTable, response_model_exclude_unset=True, status_code=201)
 def create_timetable(
     *,
     db: Session = Depends(deps.get_db),
@@ -210,7 +210,7 @@ def create_timetable(
     return timetable
 
 
-@router.put("/timetable", response_model=schemas.TimeTable, status_code=201)
+@router.put("/timetables", response_model=schemas.TimeTable, status_code=201)
 def update_timetable_by_id(
     *,
     db: Session = Depends(deps.get_db),
@@ -233,7 +233,7 @@ def update_timetable_by_id(
 
 
 
-@router.post("/scheduleblock", response_model=schemas.ScheduleBlock, status_code=201)
+@router.post("/scheduleblocks", response_model=schemas.ScheduleBlock, status_code=201)
 def create_scheduleblock(
     *,
     db: Session = Depends(deps.get_db),
@@ -252,7 +252,7 @@ def create_scheduleblock(
     return scheduleblocks
 
 
-@router.put("/scheduleblock", status_code=201)
+@router.put("/scheduleblocks", status_code=201)
 def update_scheduleblock_by_id(
     *,
     db: Session = Depends(deps.get_db),
@@ -278,7 +278,7 @@ def update_scheduleblock_by_id(
     return scheduleblocks
 
 
-@router.delete("/scheduleblock/{scheduleblock_id}")
+@router.delete("/scheduleblocks/{scheduleblock_id}")
 def delete_scheduleblock_by_id(
     scheduleblock_id: str,
     db: Session = Depends(deps.get_db),
