@@ -9,7 +9,6 @@ class UserBase(BaseModel):
     email: Optional[EmailStr] = None
     nickname: Optional[str] = None
     is_active: Optional[bool] = True
-    is_superuser: bool = False
 
 
 # Properties to receive via API on creation
@@ -38,3 +37,4 @@ class User(UserInDBBase):
 class UserInDB(UserInDBBase):
     hashed_password: str
     kakao_id: int
+    is_superuser: bool = False

@@ -143,6 +143,26 @@ def get_user_me(
     return current_user
 
 
+@router.put("/user/me", response_model=schemas.User)
+def get_user_me(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(deps.get_current_user),
+    user_in: schemas.UserUpdate,
+    Authorization = Header(None)
+):
+    """
+    본인 유저 정보 수정
+    
+    JWT 필요
+    """
+    
+    user = crud.user.get(db, id=current_user.id)
+    user = crud.user.update(db, db_obj=user, obj_in=user_in)
+    
+    return user
+
+
 @router.get("/timetables/{timetable_id}", response_model=schemas.TimeTable, response_model_exclude_unset=True)
 def get_timetable_by_id(
     timetable_id: str,
