@@ -144,7 +144,7 @@ def get_user_me(
 
 
 @router.put("/users/me", response_model=schemas.User)
-def get_user_me(
+def update_user_me(
     *,
     db: Session = Depends(deps.get_db),
     current_user: schemas.User = Depends(deps.get_current_user),
