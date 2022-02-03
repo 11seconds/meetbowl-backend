@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict, Optional, Tuple
 from urllib import request
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, Body, Header
@@ -34,6 +34,10 @@ html = """
     <body>
         <h1>WebSocket Chat</h1>
         <h2>Your ID: <span id="ws-id"></span></h2>
+        <form action="" onsubmit="">
+            <input type="text" id="timetable_id" autocomplete="off"/>
+            <button>connect</button>
+        </form>
         <form action="" onsubmit="sendMessage(event)">
             <input type="text" id="messageText" autocomplete="off"/>
             <button>Send</button>
@@ -41,7 +45,7 @@ html = """
         <ul id='messages'>
         </ul>
         <script>
-            var client_id = Date.now()
+            var client_id = "4fb5923fe7506b9495e236ce3f395ed7"
             document.querySelector("#ws-id").textContent = client_id;
             var ws = new WebSocket(`ws://localhost/api/v1/ws/${client_id}`);
             ws.onmessage = function(event) {
@@ -51,6 +55,12 @@ html = """
                 message.appendChild(content)
                 messages.appendChild(message)
             };
+            function connect(event) {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
             function sendMessage(event) {
                 var input = document.getElementById("messageText")
                 ws.send(input.value)
@@ -62,16 +72,46 @@ html = """
 </html>
 """
 
+class ConnectionManager:
+    def __init__(self):
+        self.connections: List[Tuple[str, WebSocket]] = []
+        
+    async def connect(self, websocket: WebSocket, timetable_id: str = ""):
+        await websocket.accept()
+        self.connections.append((timetable_id ,websocket))
+    
+    def disconnect(self, websocket: WebSocket):
+        self.connections = [(timetable_id, connection) for timetable_id, connection in self.connections if connection !=websocket]
+        
+    async def send_message_by_timetable_id_all(self, message: str, timetable_id: str=""):
+        for timetable_id, connection in self.connections:
+            if timetable_id == timetable_id:
+                await connection.send_text(message)
+
+    async def send_message_to_all(self, message: str):
+        for _, connection in self.connections:
+            await connection.send_text(f"{message}")
+
+
+manager = ConnectionManager()
+
 
 @router.get("/")
-def root():
+async def root():
     """
     웹소켓 테스트용 프론트
     """
     return HTMLResponse(html)
 
 
-@router.post("/users/login", response_model=schemas.Token)
+@router.get("/test")
+async def websocket_test(timetable_id: str):
+    # await manager.send_message_to_all("웹소켓 테스트입니다.")
+    await manager.send_message_by_timetable("특정인에게 테스트입니다.", timetable_id)
+    return "success"
+
+
+@router.post("/user/login", response_model=schemas.Token)
 def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
 
     get_access_token_headers = {
@@ -344,38 +384,16 @@ def delete_scheduleblock_by_id(
     return _return
 
 
-class ConnectionManager:
-    def __init__(self):
-        self.connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket, timetable_id: str):
-        await websocket.accept()
-        self.connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.connections.append(websocket)
-
-    async def send_message_by_id(self, websocket: WebSocket, message: str):
-        await websocket.send_text(message)
-
-    async def send_message_to_all(self, timetable_id: str, message: str):
-        for connection in self.connections:
-            await connection.send_text(f"{timetable_id}: {message}")
-
-
-manager = ConnectionManager()
-
-
 @router.websocket("/ws/{timetable_id}")
-async def ws_connect(websocket: WebSocket, timetable_id: str):
+async def ws_connect(websocket: WebSocket, timetable_id: str = "test"):
     await manager.connect(websocket=websocket, timetable_id=timetable_id)
     try:
         while True:
-            # 여기에 다른 사람의 제출을 기다렸다가 쏴주는 로직이 필요함 근데 db에 저장되고 call을 할 수 있을까?
+            # 여기에 다른 사람의 제출을 기다렸다가 쏴주x는 로직이 필요함 근데 db에 저장되고 call을 할 수 있을까?
             # db 저장시 lock이 걸려도 괜찮을까?
             # 방장에게만 쏴주어도 될까? 전체에게 쏴주어야 할까?
             data = await websocket.receive_text()
-            await manager.send_message_to_all(timetable_id, data)
-
+            await manager.send_message_to_all(data)
+    
     except Exception as e:
         manager.disconnect(websocket)
