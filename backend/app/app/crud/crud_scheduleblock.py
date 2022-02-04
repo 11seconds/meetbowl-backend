@@ -42,6 +42,8 @@ class CRUDScheduleblock(CRUDBase[ScheduleBlock, ScheduleBlockCreate, ScheduleBlo
             )
         db.add_all(db_objs)
         db.commit()
+        for db_obj in db_objs:
+            db.refresh(db_obj)
         return db_objs
     
     def get_all(self, db:Session, table_id:str):

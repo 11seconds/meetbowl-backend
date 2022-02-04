@@ -213,7 +213,7 @@ def update_timetable_by_id(
 
 
 
-@router.post("/scheduleblock", response_model=schemas.ScheduleBlock, status_code=201)
+@router.post("/scheduleblock", status_code=201)
 def create_scheduleblock(
     *,
     db: Session = Depends(deps.get_db),
@@ -223,11 +223,11 @@ def create_scheduleblock(
 ):
     """
     스케쥴 블록 생성 API
+    
+    JWT 인증 필요
     """
-    scheduleblocks = []
-    for scheduleblock_in in scheduleblocks_in:
-        scheduleblock_in['user_id'] = current_user.id
-        scheduleblocks.append(crud.scheduleblock.create(db, obj_in=scheduleblock_in))
+    
+    scheduleblocks = crud.scheduleblock.create_all(db, objs_in=scheduleblocks_in, user_id=current_user.id)
     
     return scheduleblocks
 
@@ -241,9 +241,10 @@ def update_scheduleblock_by_id(
     Authorization = Header(None)
 ):
     """ 스케쥴 블록 수정
-    JWT 필요
+    
+    JWT 인증 필요
     """
-
+    
     scheduleblocks = []
 
     for scheduleblock_in in scheduleblocks_in:
