@@ -12,13 +12,14 @@ from app.core.security import create_uuid
 
 
 class CRUDScheduleblock(CRUDBase[ScheduleBlock, ScheduleBlockCreate, ScheduleBlockUpdate]):
-    def create(self, db: Session, *, obj_in: ScheduleBlockCreate) -> ScheduleBlock:
+    def create(self, db: Session, *, obj_in: ScheduleBlockCreate, user_id: str) -> ScheduleBlock:
         db_obj = ScheduleBlock(
             id=create_uuid(),
             table_id=obj_in.table_id,
-            user_id=obj_in.user_id,
-            start_datetime=obj_in.start_datetime,
-            end_datetime=obj_in.end_datetime,
+            user_id=user_id,
+            start_time=obj_in.start_time,
+            end_time=obj_in.end_time,
+            day=obj_in.day,
             label=obj_in.label
         )
         db.add(db_obj)
@@ -28,7 +29,10 @@ class CRUDScheduleblock(CRUDBase[ScheduleBlock, ScheduleBlockCreate, ScheduleBlo
     
     
     def get_all(self, db:Session, table_id:str):
-        db_obj = db.query(self.model.user_id, self.model.start_datetime, self.model.end_datetime).filter(self.model.table_id==table_id).all()
+        db_obj = db.query(
+            self.model.user_id,
+            self.model.start_time,
+            self.model.end_time).filter(self.model.table_id==table_id).all()
         return db_obj
 
 

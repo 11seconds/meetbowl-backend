@@ -175,7 +175,7 @@ def get_timetable_by_id(
     타임테이블 정보 보기
     """
     timetables = crud.timetable.get(db, id=timetable_id)
-    if not timetable:
+    if not timetables:
         raise HTTPException(status_code=404, detail="Timetable not found")
     return timetables
     
@@ -190,8 +190,6 @@ def get_scheduleblocks_by_timetable_id(
     타임테이블의 스케쥴 블록 조회
     """
     scheduleblock = crud.scheduleblock.get_all(db, table_id=timetable_id)
-    if not scheduleblock:
-        raise HTTPException(status_code=404, detail="Timetable not found")
     return scheduleblock
 
 
@@ -235,23 +233,20 @@ def update_timetable_by_id(
 
 
 
-@router.post("/scheduleblocks", response_model=schemas.ScheduleBlock, status_code=201)
+@router.post("/scheduleblocks", status_code=201)
 def create_scheduleblock(
     *,
     db: Session = Depends(deps.get_db),
-    scheduleblocks_in: List[schemas.ScheduleBlockCreate],
+    scheduleblock_in: schemas.ScheduleBlockCreate,
     current_user: models.User = Depends(deps.get_current_user),
     Authorization = Header(None)
 ):
     """
     스케쥴 블록 생성 API
     """
-    scheduleblocks = []
-    for scheduleblock_in in scheduleblocks_in:
-        scheduleblock_in['user_id'] = current_user.id
-        scheduleblocks.append(crud.scheduleblock.create(db, obj_in=scheduleblock_in))
+    scheduleblock = crud.scheduleblock.create(db, obj_in=scheduleblock_in, user_id=current_user.id)
     
-    return scheduleblocks
+    return scheduleblock
 
 
 @router.patch("/scheduleblocks", status_code=201)
