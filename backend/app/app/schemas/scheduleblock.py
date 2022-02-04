@@ -7,7 +7,6 @@ from pydantic import BaseModel
 
 # Shared properties
 class ScheduleBlockBase(BaseModel):
-    id: str
     table_id: str
     start_datetime: Optional[datetime] = None
     end_datetime: Optional[datetime] = None
@@ -16,12 +15,11 @@ class ScheduleBlockBase(BaseModel):
 
 #업데이트시 받을 데이터
 class ScheduleBlockUpdate(ScheduleBlockBase):
-    user_id: str
+    id: str
 
 
 # 생성시 받을 데이터
 class ScheduleBlockCreate(ScheduleBlockBase):
-    user_id: str
     start_datetime: Optional[datetime]
     end_datetime: Optional[datetime]
     label: Optional[str]
@@ -29,13 +27,14 @@ class ScheduleBlockCreate(ScheduleBlockBase):
     
 class ScheduleBlockInDBBase(ScheduleBlockBase):
     created_at: datetime
+    id: str
     class config:
         orm_mode=True
         
 
 # API 반환 데이터
 class ScheduleBlock(ScheduleBlockInDBBase):
-    pass
+    user_id: str
 
 
 # DB에만 있는 데이터
