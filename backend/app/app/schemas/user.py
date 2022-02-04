@@ -13,6 +13,8 @@ class UserBase(BaseModel):
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     email: Optional[EmailStr] = None
+    password: Optional[str] = None
+    is_superuser: bool = None
     
 
 # Properties to receive via API on update
@@ -36,4 +38,4 @@ class User(UserInDBBase):
 class UserInDB(UserInDBBase):
     hashed_password: str
     kakao_id: int
-    is_superuser: bool = False
+    is_superuser: bool
