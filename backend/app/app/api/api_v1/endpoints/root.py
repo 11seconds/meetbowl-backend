@@ -193,6 +193,21 @@ def get_scheduleblocks_by_timetable_id(
     return scheduleblock
 
 
+
+@router.get("/timetables/{timetable_id}/scheduleblocks/me")
+def get_my_scheduleblocks_by_timetable_id(
+    timetable_id: str,
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(deps.get_current_user)
+):
+    """
+    로그인한 유저 본인의 타임테이블의 스케쥴 블록 조회
+    """
+    scheduleblocks = crud.scheduleblock.get_all_by_user_id(db, table_id=timetable_id, user_id=current_user.id)
+    return scheduleblocks
+
+
+
 @router.post("/timetables", response_model=schemas.TimeTable, response_model_exclude_unset=True, status_code=201)
 def create_timetable(
     *,
