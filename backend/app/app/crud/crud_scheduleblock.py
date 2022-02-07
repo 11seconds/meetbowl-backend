@@ -32,14 +32,18 @@ class CRUDScheduleblock(CRUDBase[ScheduleBlock, ScheduleBlockCreate, ScheduleBlo
         db_obj = db.query(
             self.model.user_id,
             self.model.start_time,
-            self.model.end_time).filter(self.model.table_id==table_id).all()
+            self.model.end_time,
+            self.model.day,
+            ).filter(self.model.table_id==table_id).all()
         return db_obj
     
     def get_all_by_user_id(self, db:Session, table_id:str, user_id:str):
         db_obj = db.query(
             self.model.user_id,
             self.model.start_time,
-            self.model.end_time).filter(self.model.table_id==table_id, self.model.user_id==user_id).all()
+            self.model.end_time,
+            self.model.day,
+            ).filter(self.model.table_id==table_id, self.model.user_id==user_id).all()
         return db_obj
 
 scheduleblock = CRUDScheduleblock(ScheduleBlock)
