@@ -166,11 +166,7 @@ def update_user_me(
     return user
 
 
-@router.get(
-    "/timetables/{timetable_id}",
-    response_model=schemas.TimeTable,
-    response_model_exclude_unset=True,
-)
+@router.get("/timetables/{timetable_id}", response_model=schemas.TimeTable)
 def get_timetable_by_id(timetable_id: str, db: Session = Depends(deps.get_db)):
     """
     타임테이블 정보 보기
@@ -213,12 +209,7 @@ def get_my_scheduleblocks_by_timetable_id(
     return scheduleblocks
 
 
-@router.post(
-    "/timetables",
-    response_model=schemas.TimeTable,
-    response_model_exclude_unset=True,
-    status_code=201,
-)
+@router.post("/timetables", response_model=schemas.TimeTable, status_code=201)
 def create_timetable(
     *,
     db: Session = Depends(deps.get_db),
