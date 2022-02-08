@@ -129,23 +129,6 @@ def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
     }
 
 
-@router.get("/users/fake", response_model=schemas.Token)
-def fake_login(db: Session = Depends(deps.get_db),):
-    """
-    본인 유저 정보 조회
-    
-    JWT 필요
-    """
-
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return {
-        "access_token": security.create_access_token(
-            "a", expires_delta=access_token_expires
-        ),
-        "token_type": "bearer",
-    }
-
-
 @router.get("/users/me", response_model=schemas.User)
 def get_user_me(
     db: Session = Depends(deps.get_db),
