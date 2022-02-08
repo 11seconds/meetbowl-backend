@@ -9,6 +9,7 @@ from app.schemas.user import UserCreate, UserUpdate
 
 from app.core.security import create_uuid
 
+
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
         return db.query(User).filter(User.email == email).first()
@@ -57,17 +58,20 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
     def get_by_kakao_id(self, db: Session, *, kakao_id: int) -> Optional[User]:
         return db.query(User).filter(User.kakao_id == kakao_id).first()
-    
-    def create_by_kakao_id(self, db: Session, *, kakao_id: int, nickname: Optional[str]) -> User:
+
+    def create_by_kakao_id(
+        self, db: Session, *, kakao_id: int, nickname: Optional[str]
+    ) -> User:
         db_obj = User(
             id=create_uuid(),
-            kakao_id= kakao_id,
+            kakao_id=kakao_id,
             hashed_password=get_password_hash(create_uuid()),
-            nickname=nickname
+            nickname=nickname,
         )
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
         return db_obj
+
 
 user = CRUDUser(User)

@@ -73,38 +73,39 @@ def root():
 
 @router.post("/users/login", response_model=schemas.Token)
 def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
-    
-    headers = {
-        "Content-type":"application/x-www-form-urlencoded;charset=utf-8"
-        }
+
+    get_access_token_headers = {
+        "Content-type": "application/x-www-form-urlencoded;charset=utf-8"
+    }
     params = {
         "grant_type": "authorization_code",
         "client_id": settings.KAKAO_APP_KEY,
         "redirect_uri": code.redirect_uri,
-        "code": code.code
+        "code": code.code,
     }
-    
+
     kakao_access_token = requests.post(
         "https://kauth.kakao.com/oauth/token",
-        headers=headers,
-        params=params).json()
-    if not kakao_access_token.get('access_token'):
+        headers=get_access_token_headers,
+        params=params,
+    ).json()
+    if not kakao_access_token.get("access_token"):
         raise HTTPException(status_code=401, detail="Incorrect code")
-    
-    headers2 = {
-        "Content-type":"application/x-www-form-urlencoded;charset=utf-8",
-        "Authorization": "Bearer "+ kakao_access_token['access_token']
-        }
-    
-    kakao_user = requests.post(
-        "https://kapi.kakao.com/v2/user/me",
-        headers=headers2).json()
 
-    if not kakao_user.get('id'):
+    get_user_info_headers = {
+        "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+        "Authorization": "Bearer " + kakao_access_token["access_token"],
+    }
+
+    kakao_user = requests.post(
+        "https://kapi.kakao.com/v2/user/me", headers=get_user_info_headers
+    ).json()
+
+    if not kakao_user.get("id"):
         raise HTTPException(status_code=500, detail="Get kakao id error")
-    
-    user = crud.user.get_by_kakao_id(db, kakao_id=kakao_user.get('id'))
-    
+
+    user = crud.user.get_by_kakao_id(db, kakao_id=kakao_user.get("id"))
+
     if user:
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         return {
@@ -113,21 +114,43 @@ def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
             ),
             "token_type": "bearer",
         }
-    elif not user:
-        created_user = crud.user.create_by_kakao_id(db, kakao_id=kakao_user.get('id'), nickname=kakao_user.get('properties').get('nickname'))
-        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        return {
-            "access_token": security.create_access_token(
-                created_user.id, expires_delta=access_token_expires
-            ),
-            "token_type": "bearer",
-        }
+
+    created_user = crud.user.create_by_kakao_id(
+        db,
+        kakao_id=kakao_user.get("id"),
+        nickname=kakao_user.get("properties").get("nickname"),
+    )
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    return {
+        "access_token": security.create_access_token(
+            created_user.id, expires_delta=access_token_expires
+        ),
+        "token_type": "bearer",
+    }
+
+
+@router.get("/users/fake", response_model=schemas.Token)
+def fake_login(db: Session = Depends(deps.get_db),):
+    """
+    본인 유저 정보 조회
+    
+    JWT 필요
+    """
+
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    return {
+        "access_token": security.create_access_token(
+            "a", expires_delta=access_token_expires
+        ),
+        "token_type": "bearer",
+    }
+
 
 @router.get("/users/me", response_model=schemas.User)
 def get_user_me(
     db: Session = Depends(deps.get_db),
     current_user: schemas.User = Depends(deps.get_current_user),
-    Authorization = Header(None)
+    Authorization=Header(None),
 ):
     """
     본인 유저 정보 조회
@@ -143,28 +166,29 @@ def update_user_me(
     db: Session = Depends(deps.get_db),
     current_user: schemas.User = Depends(deps.get_current_user),
     user_in: schemas.UserUpdate,
-    Authorization = Header(None)
+    Authorization=Header(None),
 ):
     """
     본인 유저 정보 수정
     
     JWT 필요
     """
-    
+
     if user_in.nickname != None and user_in.nickname == "":
         raise HTTPException(status_code=400, detail="Nickname must not be empty string")
-    
+
     user = crud.user.get(db, id=current_user.id)
     user = crud.user.update(db, db_obj=user, obj_in=user_in)
-    
+
     return user
 
 
-@router.get("/timetables/{timetable_id}", response_model=schemas.TimeTable, response_model_exclude_unset=True)
-def get_timetable_by_id(
-    timetable_id: str,
-    db: Session = Depends(deps.get_db)
-):
+@router.get(
+    "/timetables/{timetable_id}",
+    response_model=schemas.TimeTable,
+    response_model_exclude_unset=True,
+)
+def get_timetable_by_id(timetable_id: str, db: Session = Depends(deps.get_db)):
     """
     타임테이블 정보 보기
     """
@@ -172,13 +196,11 @@ def get_timetable_by_id(
     if not timetables:
         raise HTTPException(status_code=404, detail="Timetable not found")
     return timetables
-    
 
 
 @router.get("/timetables/{timetable_id}/scheduleblocks")
 def get_scheduleblocks_by_timetable_id(
-    timetable_id: str,
-    db: Session = Depends(deps.get_db)
+    timetable_id: str, db: Session = Depends(deps.get_db)
 ):
     """
     타임테이블의 스케쥴 블록 조회
@@ -187,28 +209,36 @@ def get_scheduleblocks_by_timetable_id(
     return scheduleblock
 
 
-
-@router.get("/timetables/{timetable_id}/scheduleblocks/me")
+@router.get(
+    "/timetables/{timetable_id}/scheduleblocks/me",
+    response_model=List[schemas.ScheduleBlock],
+)
 def get_my_scheduleblocks_by_timetable_id(
     timetable_id: str,
     db: Session = Depends(deps.get_db),
-    current_user: schemas.User = Depends(deps.get_current_user)
+    current_user: schemas.User = Depends(deps.get_current_user),
 ):
     """
     로그인한 유저 본인의 타임테이블의 스케쥴 블록 조회
     """
-    scheduleblocks = crud.scheduleblock.get_all_by_user_id(db, table_id=timetable_id, user_id=current_user.id)
+    scheduleblocks = crud.scheduleblock.get_all_by_user_id(
+        db, table_id=timetable_id, user_id=current_user.id
+    )
     return scheduleblocks
 
 
-
-@router.post("/timetables", response_model=schemas.TimeTable, response_model_exclude_unset=True, status_code=201)
+@router.post(
+    "/timetables",
+    response_model=schemas.TimeTable,
+    response_model_exclude_unset=True,
+    status_code=201,
+)
 def create_timetable(
     *,
     db: Session = Depends(deps.get_db),
     timetable_in: schemas.TimeTableCreate,
     current_user: schemas.User = Depends(deps.get_current_user),
-    Authorization = Header(None)
+    Authorization=Header(None),
 ):
     """
     타임테이블 생성
@@ -219,42 +249,50 @@ def create_timetable(
     return timetable
 
 
-@router.patch("/timetables/{timetable_id}", response_model=schemas.TimeTable, status_code=201)
+@router.patch(
+    "/timetables/{timetable_id}", response_model=schemas.TimeTable, status_code=201
+)
 def update_timetable_by_id(
     *,
     db: Session = Depends(deps.get_db),
     timetable_id: str,
     timetable_in: schemas.TimeTableUpdate,
     current_user: models.User = Depends(deps.get_current_user),
-    Authorization = Header(None)
+    Authorization=Header(None),
 ):
     """
     시간표 정보 수정
     JWT 필요
     """
     timetable = crud.timetable.get(db, timetable_id)
-    
+
     if timetable.create_user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="The user doesn't have enough privileges. Only timetable owner can update info.")
-    
-    timetable = crud.timetable.update(db, db_obj=timetable ,obj_in=timetable_in)
+        raise HTTPException(
+            status_code=403,
+            detail="The user doesn't have enough privileges. Only timetable owner can update info.",
+        )
+
+    timetable = crud.timetable.update(db, db_obj=timetable, obj_in=timetable_in)
     return timetable
 
 
-
-@router.post("/scheduleblocks", status_code=201)
+@router.post(
+    "/scheduleblocks", status_code=201, response_model=List[schemas.ScheduleBlock]
+)
 def create_scheduleblock(
     *,
     db: Session = Depends(deps.get_db),
     scheduleblock_in: schemas.ScheduleBlockCreate,
     current_user: models.User = Depends(deps.get_current_user),
-    Authorization = Header(None)
+    Authorization=Header(None),
 ):
     """
     스케쥴 블록 생성 API
     """
-    scheduleblock = crud.scheduleblock.create(db, obj_in=scheduleblock_in, user_id=current_user.id)
-    
+    scheduleblock = crud.scheduleblock.create(
+        db, obj_in=scheduleblock_in, user_id=current_user.id
+    )
+
     return scheduleblock
 
 
@@ -264,7 +302,7 @@ def update_scheduleblock_by_id(
     db: Session = Depends(deps.get_db),
     scheduleblocks_in: List[schemas.ScheduleBlockUpdate],
     current_user: schemas.User = Depends(deps.get_current_user),
-    Authorization = Header(None)
+    Authorization=Header(None),
 ):
     """ 스케쥴 블록 수정
     JWT 필요
@@ -274,13 +312,17 @@ def update_scheduleblock_by_id(
 
     for scheduleblock_in in scheduleblocks_in:
         scheduleblock_db = crud.scheduleblock.get(db, id=scheduleblock_in.id)
-    
+
         if scheduleblock_db.user_id != current_user.id:
             raise HTTPException(
                 status_code=403, detail="The user doesn't have enough privileges"
             )
-        
-        scheduleblocks.append(crud.scheduleblock.update(db, db_obj=scheduleblock_db ,obj_in=scheduleblock_in))
+
+        scheduleblocks.append(
+            crud.scheduleblock.update(
+                db, db_obj=scheduleblock_db, obj_in=scheduleblock_in
+            )
+        )
     return scheduleblocks
 
 
@@ -289,14 +331,14 @@ def delete_scheduleblock_by_id(
     scheduleblock_id: str,
     db: Session = Depends(deps.get_db),
     *,
-    current_user: schemas.User = Depends(deps.get_current_user)
+    current_user: schemas.User = Depends(deps.get_current_user),
 ):
     scheduleblock_db = crud.scheduleblock.get(db, id=scheduleblock_id)
     if scheduleblock_db.user_id != current_user.id:
         raise HTTPException(
             status_code=403, detail="The user doesn't have enough privileges"
         )
-    
+
     _return = crud.scheduleblock.remove(db, id=scheduleblock_db.id)
 
     return _return
@@ -305,18 +347,18 @@ def delete_scheduleblock_by_id(
 class ConnectionManager:
     def __init__(self):
         self.connections: List[WebSocket] = []
-        
+
     async def connect(self, websocket: WebSocket, timetable_id: str):
         await websocket.accept()
         self.connections.append(websocket)
-    
+
     def disconnect(self, websocket: WebSocket):
         self.connections.append(websocket)
-        
+
     async def send_message_by_id(self, websocket: WebSocket, message: str):
         await websocket.send_text(message)
 
-    async def send_message_to_all(self, timetable_id: str ,message: str):
+    async def send_message_to_all(self, timetable_id: str, message: str):
         for connection in self.connections:
             await connection.send_text(f"{timetable_id}: {message}")
 
@@ -334,6 +376,6 @@ async def ws_connect(websocket: WebSocket, timetable_id: str):
             # 방장에게만 쏴주어도 될까? 전체에게 쏴주어야 할까?
             data = await websocket.receive_text()
             await manager.send_message_to_all(timetable_id, data)
-    
+
     except Exception as e:
         manager.disconnect(websocket)

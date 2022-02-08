@@ -15,7 +15,7 @@ class UserCreate(UserBase):
     email: Optional[EmailStr] = None
     password: Optional[str] = None
     is_superuser: bool = None
-    
+
 
 # Properties to receive via API on update
 class UserUpdate(UserBase):
@@ -25,6 +25,7 @@ class UserUpdate(UserBase):
 class UserInDBBase(UserBase):
     id: str
     is_active: bool
+
     class Config:
         orm_mode = True
 
