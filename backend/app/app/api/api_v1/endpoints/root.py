@@ -198,7 +198,10 @@ def get_timetable_by_id(timetable_id: str, db: Session = Depends(deps.get_db)):
     return timetables
 
 
-@router.get("/timetables/{timetable_id}/scheduleblocks")
+@router.get(
+    "/timetables/{timetable_id}/scheduleblocks",
+    response_model=List[schemas.ScheduleBlock],
+)
 def get_scheduleblocks_by_timetable_id(
     timetable_id: str, db: Session = Depends(deps.get_db)
 ):
@@ -276,9 +279,7 @@ def update_timetable_by_id(
     return timetable
 
 
-@router.post(
-    "/scheduleblocks", status_code=201, response_model=List[schemas.ScheduleBlock]
-)
+@router.post("/scheduleblocks", status_code=201, response_model=schemas.ScheduleBlock)
 def create_scheduleblock(
     *,
     db: Session = Depends(deps.get_db),
