@@ -17,13 +17,7 @@ from app.models import timetable, scheduleblock, user
 from app.core import security
 from app.core.config import settings
 from app.core.security import get_password_hash
-from app.utils import (
-    generate_password_reset_token,
-    send_reset_password_email,
-    verify_password_reset_token,
-)
 from app.core.config import settings
-
 
 
 router = APIRouter()
