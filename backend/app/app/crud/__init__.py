@@ -1,4 +1,3 @@
-from .crud_item import item
 from .crud_user import user
 from .crud_timetable import timetable
 from .crud_scheduleblock import scheduleblock
