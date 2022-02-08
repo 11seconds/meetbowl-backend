@@ -37,4 +37,4 @@ def get_password_hash(password: str) -> str:
 
 def create_uuid():
     uuid = str(uuid4()).split("-")
-    return uuid[2]+uuid[1]+uuid[0]+uuid[3]+uuid[4]
+    return uuid[2] + uuid[1] + uuid[0] + uuid[3] + uuid[4]

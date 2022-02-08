@@ -11,7 +11,7 @@ class TimeTableBase(BaseModel):
     description: Optional[str] = None
 
 
-#업데이트시 받을 데이터
+# 업데이트시 받을 데이터
 class TimeTableUpdate(TimeTableBase):
     title: str
     description: Optional[str]
@@ -21,11 +21,12 @@ class TimeTableUpdate(TimeTableBase):
 class TimeTableCreate(TimeTableBase):
     title: str
     description: Optional[str]
-    
+
 
 class TimeTableInDBBase(TimeTableBase):
     id: str
     create_user_id: str
+
     class Config:
         orm_mode = True
 
@@ -33,6 +34,7 @@ class TimeTableInDBBase(TimeTableBase):
 # API 반환 데이터
 class TimeTable(TimeTableInDBBase):
     pass
+
 
 class TimeTableInDB(TimeTableInDBBase):
     created_at: datetime
