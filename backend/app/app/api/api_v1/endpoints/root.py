@@ -56,7 +56,7 @@ html = """
 
 
 @router.get("/")
-def root():
+def root() -> HTMLResponse:
     """
     웹소켓 테스트용 프론트
     """
@@ -64,7 +64,7 @@ def root():
 
 
 @router.post("/users/login", response_model=schemas.Token)
-def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
+def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code) -> Any:
 
     get_access_token_headers = {
         "Content-type": "application/x-www-form-urlencoded;charset=utf-8"
@@ -100,12 +100,15 @@ def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
 
     if user:
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        return {
-            "access_token": security.create_access_token(
+
+        access_token = schemas.Token(
+            access_token=security.create_access_token(
                 user.id, expires_delta=access_token_expires
             ),
-            "token_type": "bearer",
-        }
+            token_type="bearer",
+        )
+
+        return access_token
 
     created_user = crud.user.create_by_kakao_id(
         db,
@@ -113,20 +116,22 @@ def user_kakao(*, db: Session = Depends(deps.get_db), code: schemas.Code):
         nickname=kakao_user.get("properties").get("nickname"),
     )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return {
-        "access_token": security.create_access_token(
+
+    access_token = schemas.Token(
+        access_token=security.create_access_token(
             created_user.id, expires_delta=access_token_expires
         ),
-        "token_type": "bearer",
-    }
+        token_type="bearer",
+    )
+
+    return access_token
 
 
 @router.get("/users/me", response_model=schemas.User)
 def get_user_me(
     db: Session = Depends(deps.get_db),
     current_user: schemas.User = Depends(deps.get_current_user),
-    Authorization=Header(None),
-):
+) -> Any:
     """
     본인 유저 정보 조회
 
@@ -141,30 +146,33 @@ def update_user_me(
     db: Session = Depends(deps.get_db),
     current_user: schemas.User = Depends(deps.get_current_user),
     user_in: schemas.UserUpdate,
-    Authorization=Header(None),
-):
+) -> Any:
     """
     본인 유저 정보 수정
 
     JWT 필요
     """
 
-    if user_in.nickname != None and user_in.nickname == "":
+    if user_in.nickname is not None and user_in.nickname == "":
         raise HTTPException(status_code=400, detail="Nickname must not be empty string")
 
-    user = crud.user.get(db, id=current_user.id)
-    user = crud.user.update(db, db_obj=user, obj_in=user_in)
+    user_db = crud.user.get(db, id=current_user.id)
 
-    return user
+    if user_db is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    updated_user = crud.user.update(db, db_obj=user_db, obj_in=user_in)
+
+    return updated_user
 
 
 @router.get("/timetables/{timetable_id}", response_model=schemas.TimeTable)
-def get_timetable_by_id(timetable_id: str, db: Session = Depends(deps.get_db)):
+def get_timetable_by_id(timetable_id: str, db: Session = Depends(deps.get_db)) -> Any:
     """
     타임테이블 정보 보기
     """
     timetables = crud.timetable.get(db, id=timetable_id)
-    if not timetables:
+    if timetables is None:
         raise HTTPException(status_code=404, detail="Timetable not found")
     return timetables
 
@@ -175,7 +183,7 @@ def get_timetable_by_id(timetable_id: str, db: Session = Depends(deps.get_db)):
 )
 def get_scheduleblocks_by_timetable_id(
     timetable_id: str, db: Session = Depends(deps.get_db)
-):
+) -> Any:
     """
     타임테이블의 스케쥴 블록 조회
     """
@@ -191,7 +199,7 @@ def get_my_scheduleblocks_by_timetable_id(
     timetable_id: str,
     db: Session = Depends(deps.get_db),
     current_user: schemas.User = Depends(deps.get_current_user),
-):
+) -> Any:
     """
     로그인한 유저 본인의 타임테이블의 스케쥴 블록 조회
     """
@@ -207,12 +215,13 @@ def create_timetable(
     db: Session = Depends(deps.get_db),
     timetable_in: schemas.TimeTableCreate,
     current_user: schemas.User = Depends(deps.get_current_user),
-    Authorization=Header(None),
-):
+) -> Any:
     """
     타임테이블 생성
     """
-    timetable = crud.timetable.create(db, obj_in=timetable_in, user_id=current_user.id)
+    timetable = crud.timetable.create_with_user_id(
+        db, obj_in=timetable_in, user_id=current_user.id
+    )
     if not timetable:
         raise HTTPException(status_code=500, detail="Timetable is not created")
     return timetable
@@ -227,22 +236,26 @@ def update_timetable_by_id(
     timetable_id: str,
     timetable_in: schemas.TimeTableUpdate,
     current_user: models.User = Depends(deps.get_current_user),
-    Authorization=Header(None),
-):
+) -> Any:
     """
     시간표 정보 수정
     JWT 필요
     """
-    timetable = crud.timetable.get(db, timetable_id)
+    timetable_db = crud.timetable.get(db, timetable_id)
 
-    if timetable.create_user_id != current_user.id:
+    if timetable_db is None:
+        raise HTTPException(status_code=404, detail="Timetable not found")
+
+    if timetable_db.create_user_id != current_user.id:
         raise HTTPException(
             status_code=403,
             detail="The user doesn't have enough privileges. Only timetable owner can update info.",
         )
 
-    timetable = crud.timetable.update(db, db_obj=timetable, obj_in=timetable_in)
-    return timetable
+    return_timetable = crud.timetable.update(
+        db, db_obj=timetable_db, obj_in=timetable_in
+    )
+    return return_timetable
 
 
 @router.post("/scheduleblocks", status_code=201, response_model=schemas.ScheduleBlock)
@@ -251,12 +264,11 @@ def create_scheduleblock(
     db: Session = Depends(deps.get_db),
     scheduleblock_in: schemas.ScheduleBlockCreate,
     current_user: models.User = Depends(deps.get_current_user),
-    Authorization=Header(None),
-):
+) -> Any:
     """
     스케쥴 블록 생성 API
     """
-    scheduleblock = crud.scheduleblock.create(
+    scheduleblock = crud.scheduleblock.create_with_user_id(
         db, obj_in=scheduleblock_in, user_id=current_user.id
     )
 
@@ -269,27 +281,29 @@ def update_scheduleblock_by_id(
     db: Session = Depends(deps.get_db),
     scheduleblocks_in: List[schemas.ScheduleBlockUpdate],
     current_user: schemas.User = Depends(deps.get_current_user),
-    Authorization=Header(None),
-):
+) -> Any:
     """ 스케쥴 블록 수정
     JWT 필요
     """
 
-    scheduleblocks = []
+    scheduleblocks: List[scheduleblock.ScheduleBlock] = []
 
     for scheduleblock_in in scheduleblocks_in:
         scheduleblock_db = crud.scheduleblock.get(db, id=scheduleblock_in.id)
+
+        if scheduleblock_db is None:
+            raise HTTPException(status_code=404, detail="Scheduleblock not found")
 
         if scheduleblock_db.user_id != current_user.id:
             raise HTTPException(
                 status_code=403, detail="The user doesn't have enough privileges"
             )
 
-        scheduleblocks.append(
-            crud.scheduleblock.update(
-                db, db_obj=scheduleblock_db, obj_in=scheduleblock_in
-            )
+        updated_scheduleblock = crud.scheduleblock.update(
+            db, db_obj=scheduleblock_db, obj_in=scheduleblock_in
         )
+
+        scheduleblocks.append(updated_scheduleblock)
     return scheduleblocks
 
 
@@ -299,8 +313,12 @@ def delete_scheduleblock_by_id(
     db: Session = Depends(deps.get_db),
     *,
     current_user: schemas.User = Depends(deps.get_current_user),
-):
+) -> Any:
     scheduleblock_db = crud.scheduleblock.get(db, id=scheduleblock_id)
+
+    if scheduleblock_db is None:
+        raise HTTPException(status_code=404, detail="Scheduleblock not found")
+
     if scheduleblock_db.user_id != current_user.id:
         raise HTTPException(
             status_code=403, detail="The user doesn't have enough privileges"
@@ -312,20 +330,20 @@ def delete_scheduleblock_by_id(
 
 
 class ConnectionManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self.connections: List[WebSocket] = []
 
-    async def connect(self, websocket: WebSocket, timetable_id: str):
+    async def connect(self, websocket: WebSocket, timetable_id: str) -> None:
         await websocket.accept()
         self.connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket):
+    def disconnect(self, websocket: WebSocket) -> None:
         self.connections.append(websocket)
 
-    async def send_message_by_id(self, websocket: WebSocket, message: str):
+    async def send_message_by_id(self, websocket: WebSocket, message: str) -> None:
         await websocket.send_text(message)
 
-    async def send_message_to_all(self, timetable_id: str, message: str):
+    async def send_message_to_all(self, timetable_id: str, message: str) -> None:
         for connection in self.connections:
             await connection.send_text(f"{timetable_id}: {message}")
 
@@ -334,7 +352,7 @@ manager = ConnectionManager()
 
 
 @router.websocket("/ws/{timetable_id}")
-async def ws_connect(websocket: WebSocket, timetable_id: str):
+async def ws_connect(websocket: WebSocket, timetable_id: str) -> None:
     await manager.connect(websocket=websocket, timetable_id=timetable_id)
     try:
         while True:
@@ -344,5 +362,5 @@ async def ws_connect(websocket: WebSocket, timetable_id: str):
             data = await websocket.receive_text()
             await manager.send_message_to_all(timetable_id, data)
 
-    except Exception as e:
+    except Exception:
         manager.disconnect(websocket)

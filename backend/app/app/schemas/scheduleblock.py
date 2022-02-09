@@ -52,4 +52,3 @@ class ScheduleBlock(ScheduleBlockInDBBase):
 # DB에만 있는 데이터
 class ScheduleBlockInDB(ScheduleBlockInDBBase):
     created_at: datetime
-    pass

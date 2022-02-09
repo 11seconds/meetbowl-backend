@@ -13,7 +13,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     email: Optional[EmailStr] = None
     password: Optional[str] = None
-    is_superuser: bool = None
+    is_superuser: bool = False
 
 
 # Properties to receive via API on update
