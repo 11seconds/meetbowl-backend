@@ -1,3 +1,3 @@
-from .user import User
-from .timetable import TimeTable
 from .scheduleblock import ScheduleBlock
+from .timetable import TimeTable
+from .user import User

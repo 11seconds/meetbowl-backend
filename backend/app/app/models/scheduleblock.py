@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Time, SmallInteger
+from sqlalchemy import Column, DateTime, ForeignKey, SmallInteger, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.db.base_class import Base
 
 if TYPE_CHECKING:
-    from .scheduleblock import ScheduleBlock  # noqa: F401
+    from .timetable import TimeTable  # noqa: F401
 
 
 class ScheduleBlock(Base):

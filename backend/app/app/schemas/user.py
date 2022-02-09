@@ -2,7 +2,6 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr
 
-from uuid import uuid4
 
 # Shared properties
 class UserBase(BaseModel):

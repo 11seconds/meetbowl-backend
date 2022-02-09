@@ -1,6 +1,6 @@
-from .crud_user import user
-from .crud_timetable import timetable
 from .crud_scheduleblock import scheduleblock
+from .crud_timetable import timetable
+from .crud_user import user
 
 # For a new basic set of CRUD operations you could just do
 

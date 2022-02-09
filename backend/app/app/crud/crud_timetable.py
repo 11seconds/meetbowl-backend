@@ -1,13 +1,9 @@
-from pydoc import describe
-from typing import Any, Dict, Optional, Union
-
 from sqlalchemy.orm import Session
 
+from app.core.security import create_uuid
 from app.crud.base import CRUDBase
 from app.models.timetable import TimeTable
 from app.schemas.timetable import TimeTableCreate, TimeTableUpdate
-
-from app.core.security import create_uuid
 
 
 class CRUDTimeTable(CRUDBase[TimeTable, TimeTableCreate, TimeTableUpdate]):
