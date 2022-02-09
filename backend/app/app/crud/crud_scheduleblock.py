@@ -13,7 +13,7 @@ from app.schemas.scheduleblock import ScheduleBlockCreate, ScheduleBlockUpdate
 class CRUDScheduleblock(
     CRUDBase[ScheduleBlock, ScheduleBlockCreate, ScheduleBlockUpdate]
 ):
-    def create(
+    def create_with_user_id(
         self, db: Session, *, obj_in: ScheduleBlockCreate, user_id: str
     ) -> ScheduleBlock:
         obj_in_data = jsonable_encoder(obj_in)
