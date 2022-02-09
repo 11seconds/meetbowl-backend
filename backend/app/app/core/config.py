@@ -16,8 +16,7 @@ class Settings(BaseSettings):
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
-    
-    
+
     @validator("KAKAO_APP_KEY", pre=True)
     def get_kakao_app_key(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if not v:
