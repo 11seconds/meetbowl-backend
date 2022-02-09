@@ -7,7 +7,7 @@ from app.schemas.timetable import TimeTableCreate, TimeTableUpdate
 
 
 class CRUDTimeTable(CRUDBase[TimeTable, TimeTableCreate, TimeTableUpdate]):
-    def create(
+    def create_with_user_id(
         self, db: Session, *, obj_in: TimeTableCreate, user_id: str
     ) -> TimeTable:
         db_obj = TimeTable(
