@@ -129,7 +129,7 @@ def get_user_me(
 ):
     """
     본인 유저 정보 조회
-    
+
     JWT 필요
     """
     return current_user
@@ -145,7 +145,7 @@ def update_user_me(
 ):
     """
     본인 유저 정보 수정
-    
+
     JWT 필요
     """
 
