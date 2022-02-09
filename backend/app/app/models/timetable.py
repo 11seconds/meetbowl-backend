@@ -1,14 +1,14 @@
-from turtle import back
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.db.base_class import Base
 
 if TYPE_CHECKING:
-    from .timetable import TimeTable  # noqa: F401
+    from .scheduleblock import ScheduleBlock  # noqa: F401
+    from .user import User  # noqa: F401
 
 
 class TimeTable(Base):

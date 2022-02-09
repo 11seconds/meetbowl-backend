@@ -1,16 +1,13 @@
-from pydoc import describe
-from typing import Any, Dict, Optional, Union, List
-from fastapi import HTTPException
-from sqlalchemy import table
+from typing import List
 
+from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
+from app.core.security import create_uuid
 from app.crud.base import CRUDBase
 from app.models.scheduleblock import ScheduleBlock
 from app.schemas.scheduleblock import ScheduleBlockCreate, ScheduleBlockUpdate
-
-from app.core.security import create_uuid
 
 
 class CRUDScheduleblock(

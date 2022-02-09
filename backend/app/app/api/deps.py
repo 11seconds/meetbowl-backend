@@ -1,20 +1,17 @@
 from typing import Generator
-from urllib import request
 
-from fastapi import Depends, HTTPException, status, Header
-from fastapi.security import OAuth2PasswordBearer, OAuth2
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.security.utils import get_authorization_scheme_param
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
-import requests
 from starlette.requests import Request
 
-from app import crud, models, schemas
+from app import crud, models
 from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
-from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"

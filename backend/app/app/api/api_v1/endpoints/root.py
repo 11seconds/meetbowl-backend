@@ -1,24 +1,16 @@
 from datetime import timedelta
-from typing import Any, List, Dict, Optional
-from urllib import request
+from typing import Any, List
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, Body, Header
-
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import HTMLResponse
-from pydantic.networks import EmailStr
-from sqlalchemy.orm import Session
 import requests
-from starlette.requests import Request
+from fastapi import APIRouter, Depends, HTTPException, WebSocket
+from fastapi.responses import HTMLResponse
+from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.models import timetable, scheduleblock, user
 from app.core import security
 from app.core.config import settings
-from app.core.security import get_password_hash
-from app.core.config import settings
-
+from app.models import scheduleblock
 
 router = APIRouter()
 
