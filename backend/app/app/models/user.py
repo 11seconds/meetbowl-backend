@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 if TYPE_CHECKING:
-    from .user import User  # noqa: F401
+    from .timetable import TimeTable  # noqa: F401
 
 
 class User(Base):

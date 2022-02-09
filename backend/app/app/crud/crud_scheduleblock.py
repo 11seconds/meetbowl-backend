@@ -35,11 +35,13 @@ class CRUDScheduleblock(
         db.refresh(db_obj)
         return db_obj
 
-    def get_all(self, db: Session, table_id: str):
+    def get_all(self, db: Session, table_id: str) -> List[ScheduleBlock]:
         db_obj = db.query(self.model).filter(self.model.table_id == table_id).all()
         return db_obj
 
-    def get_all_by_user_id(self, db: Session, table_id: str, user_id: str):
+    def get_all_by_user_id(
+        self, db: Session, table_id: str, user_id: str
+    ) -> List[ScheduleBlock]:
         db_obj = (
             db.query(self.model)
             .filter(self.model.table_id == table_id, self.model.user_id == user_id)

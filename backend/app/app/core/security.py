@@ -35,6 +35,6 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def create_uuid():
+def create_uuid() -> str:
     uuid = str(uuid4()).split("-")
     return uuid[2] + uuid[1] + uuid[0] + uuid[3] + uuid[4]

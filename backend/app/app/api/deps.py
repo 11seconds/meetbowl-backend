@@ -25,22 +25,20 @@ def get_db() -> Generator:
     finally:
         db.close()
 
-def get_token(request: Request):
+
+def get_token(request: Request) -> str:
     authorization: str = request.headers.get("Authorization")
     scheme, param = get_authorization_scheme_param(authorization)
     if not authorization or scheme.lower() != "bearer":
         raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return param
 
 
-def get_current_user(
-    request: Request,
-    db: Session = Depends(get_db)
-) -> models.User:
+def get_current_user(request: Request, db: Session = Depends(get_db)) -> models.User:
     token = get_token(request)
     try:
         payload = jwt.decode(
