@@ -15,57 +15,13 @@ def test_create_user(db: Session) -> None:
     assert hasattr(user, "hashed_password")
 
 
-def test_authenticate_user(db: Session) -> None:
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreate(email=email, password=password)
-    user = crud.user.create(db, obj_in=user_in)
-    authenticated_user = crud.user.authenticate(db, email=email, password=password)
-    assert authenticated_user
-    assert user.email == authenticated_user.email
-
-
-def test_not_authenticate_user(db: Session) -> None:
-    email = random_email()
-    password = random_lower_string()
-    user = crud.user.authenticate(db, email=email, password=password)
-    assert user is None
-
-
-def test_check_if_user_is_active(db: Session) -> None:
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreate(email=email, password=password)
-    user = crud.user.create(db, obj_in=user_in)
-    is_active = crud.user.is_active(user)
-    assert is_active is True
-
-
-def test_check_if_user_is_active_inactive(db: Session) -> None:
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreate(email=email, password=password, disabled=True)
-    user = crud.user.create(db, obj_in=user_in)
-    is_active = crud.user.is_active(user)
-    assert is_active
-
-
-def test_check_if_user_is_superuser(db: Session) -> None:
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreate(email=email, password=password, is_superuser=True)
-    user = crud.user.create(db, obj_in=user_in)
-    is_superuser = crud.user.is_superuser(user)
-    assert is_superuser is True
-
-
-def test_check_if_user_is_superuser_normal_user(db: Session) -> None:
-    username = random_email()
-    password = random_lower_string()
-    user_in = UserCreate(email=username, password=password)
-    user = crud.user.create(db, obj_in=user_in)
-    is_superuser = crud.user.is_superuser(user)
-    assert is_superuser is False
+def test_create_user_by_kakao_id(db: Session) -> None:
+    kakao_id = randint(1000000, 9999999)
+    nickname = random_lower_string()
+    user = crud.user.create_by_kakao_id(db, kakao_id=kakao_id, nickname=nickname)
+    assert user
+    assert user.kakao_id == kakao_id
+    assert user.nickname == nickname
 
 
 def test_get_user(db: Session) -> None:
