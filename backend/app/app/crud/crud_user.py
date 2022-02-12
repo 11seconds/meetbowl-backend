@@ -1,3 +1,4 @@
+from random import randint
 from typing import Any, Dict, Optional, Union
 
 from sqlalchemy.orm import Session
@@ -20,6 +21,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             hashed_password=get_password_hash(obj_in.password),
             id=create_uuid(),
             is_superuser=obj_in.is_superuser,
+            color_id=randint(0, 9),
         )
         db.add(db_obj)
         db.commit()
