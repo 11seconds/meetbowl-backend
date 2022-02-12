@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import BaseModel, EmailStr
 
@@ -24,6 +24,7 @@ class UserUpdate(UserBase):
 class UserInDBBase(UserBase):
     id: str
     is_active: bool
+    color: Any
 
     class Config:
         orm_mode = True
