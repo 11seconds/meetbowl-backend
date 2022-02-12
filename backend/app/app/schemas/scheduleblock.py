@@ -46,7 +46,8 @@ class ScheduleBlockInDBBase(ScheduleBlockBase):
 
 # API 반환 데이터
 class ScheduleBlock(ScheduleBlockInDBBase):
-    pass
+    color: Optional[str]
+    nickname: Optional[str]
 
 
 # DB에만 있는 데이터
