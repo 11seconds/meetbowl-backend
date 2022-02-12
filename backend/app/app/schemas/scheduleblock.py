@@ -33,6 +33,7 @@ class ScheduleBlockInDBBase(ScheduleBlockBase):
         orm_mode = True
         schema_extra = {
             "example": {
+                "id": "550416ccb189c194b2c3bf4c7665725d",
                 "table_id": "450416ccb189c194b2c3bf4c7665725d",
                 "start_time": 12,
                 "start_minute": 0,
@@ -40,6 +41,9 @@ class ScheduleBlockInDBBase(ScheduleBlockBase):
                 "end_minute": 30,
                 "day": 0,
                 "lable": "학교 시험이 있어요",
+                "user_id": "450416ccb189c194b2c3bf4c7665725e",
+                "color": "#112233",
+                "nickname": "우동역전13",
             }
         }
 
