@@ -1,4 +1,5 @@
 from typing import Generator
+import requests
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -8,7 +9,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 
-from app import crud, models
+from app import crud, models, schemas
 from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -76,3 +77,37 @@ def get_current_active_superuser(
             status_code=403, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+
+def get_kakao_user(code: schemas.Code) -> schemas.KakaoUser:
+    get_access_token_headers = {
+        "Content-type": "application/x-www-form-urlencoded;charset=utf-8"
+    }
+    params = {
+        "grant_type": "authorization_code",
+        "client_id": settings.KAKAO_APP_KEY,
+        "redirect_uri": code.redirect_uri,
+        "code": code.code,
+    }
+
+    kakao_access_token = requests.post(
+        "https://kauth.kakao.com/oauth/token",
+        headers=get_access_token_headers,
+        params=params,
+    ).json()
+    if not kakao_access_token.get("access_token"):
+        raise HTTPException(status_code=401, detail="Incorrect code")
+
+    get_user_info_headers = {
+        "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+        "Authorization": "Bearer " + kakao_access_token["access_token"],
+    }
+
+    kakao_user = requests.post(
+        "https://kapi.kakao.com/v2/user/me", headers=get_user_info_headers
+    ).json()
+
+    if not kakao_user.get("id"):
+        raise HTTPException(status_code=500, detail="Get kakao id error")
+
+    return kakao_user
