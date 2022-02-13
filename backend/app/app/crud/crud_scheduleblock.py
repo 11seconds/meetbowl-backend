@@ -22,7 +22,7 @@ class CRUDScheduleblock(
         if obj_in.start_time not in range(0, 24) or obj_in.end_time not in range(0, 24):
             raise HTTPException(400, detail="Time data must be in 0~23")
         if obj_in.start_minute not in range(0, 60) or obj_in.end_minute not in range(
-            0, 59
+            0, 60
         ):
             raise HTTPException(400, detail="Minute data must be in 0~59")
 
