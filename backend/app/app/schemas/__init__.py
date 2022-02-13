@@ -3,3 +3,4 @@ from .scheduleblock import ScheduleBlock, ScheduleBlockCreate, ScheduleBlockUpda
 from .timetable import TimeTable, TimeTableCreate, TimeTableUpdate
 from .token import Authorization, Code, Token, TokenPayload
 from .user import User, UserCreate, UserInDB, UserUpdate
+from .kakao_user import KakaoUser
