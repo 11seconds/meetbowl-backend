@@ -67,6 +67,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             kakao_id=kakao_id,
             hashed_password=get_password_hash(create_uuid()),
             nickname=nickname,
+            color_id=randint(0, 9),
         )
         db.add(db_obj)
         db.commit()
