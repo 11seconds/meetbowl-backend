@@ -53,9 +53,6 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def is_active(self, user: User) -> bool:
         return user.is_active
 
-    def is_superuser(self, user: User) -> bool:
-        return user.is_superuser
-
     def get_by_kakao_id(self, db: Session, *, kakao_id: int) -> Optional[User]:
         return db.query(User).filter(User.kakao_id == kakao_id).first()
 
