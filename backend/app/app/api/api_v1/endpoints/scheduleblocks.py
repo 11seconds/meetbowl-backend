@@ -27,6 +27,53 @@ def create_scheduleblock(
     return scheduleblock
 
 
+@router.post(
+    "/scheduleblocks/all", status_code=201, response_model=List[schemas.ScheduleBlock]
+)
+def create_all_scheduleblocks(
+    timetable_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    특정 타임테이블에 특정 유저의 모든 스케쥴 블럭 생성하는 API
+    """
+
+    get_db = crud.scheduleblock.get_all_by_user_id(
+        db, table_id=timetable_id, user_id=current_user.id
+    )
+
+    if get_db is not None:
+        _deleted = crud.scheduleblock.delete_all_by_user_id(
+            db, table_id=timetable_id, user_id=current_user.id
+        )
+
+    scheduleblocks = crud.scheduleblock.create_all_by_user_id(
+        db, table_id=timetable_id, user_id=current_user.id
+    )
+
+    return scheduleblocks
+
+
+@router.delete("/scheduleblocks/all", status_code=202)
+def delete_all_scheduleblocks(
+    timetable_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    특정 타임테이블에 있는 특정 유저의 모든 스케쥴 블럭을 제거함
+    """
+
+    scheduleblocks = crud.scheduleblock.delete_all_by_user_id(
+        db, table_id=timetable_id, user_id=current_user.id
+    )
+
+    return scheduleblocks
+
+
 @router.patch("/scheduleblocks", status_code=201)
 def update_scheduleblock_by_id(
     *,
