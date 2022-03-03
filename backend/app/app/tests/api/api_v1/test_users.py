@@ -1,13 +1,11 @@
-from typing import Dict
-
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.core.config import settings
 from app.schemas.user import UserCreate
-from app.tests.utils.utils import random_email, random_lower_string
 from app.tests.utils.user import get_auth_header
+from app.tests.utils.utils import random_email, random_lower_string
 
 
 def test_get_me(client: TestClient, db: Session) -> None:
@@ -51,4 +49,3 @@ def test_patch_user_me_empty_nickname(client: TestClient, db: Session) -> None:
     r = client.patch(f"{settings.API_V1_STR}/users/me", headers=auth_header, json=data)
 
     assert r.status_code == 400
-

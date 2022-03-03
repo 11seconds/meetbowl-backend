@@ -1,15 +1,13 @@
-from typing import Dict
 from datetime import timedelta
+from typing import Dict
 
-from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.core.config import settings
 from app.core import security
+from app.core.config import settings
 from app.models.user import User
-from app.schemas import Token
-from app.schemas.user import UserCreate, UserUpdate
+from app.schemas.user import UserCreate
 from app.tests.utils.utils import random_email, random_lower_string
 
 

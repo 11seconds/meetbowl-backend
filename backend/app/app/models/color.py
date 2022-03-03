@@ -1,6 +1,4 @@
-from typing import TYPE_CHECKING
-
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, Integer, String
 
 from app.db.base_class import Base
 
