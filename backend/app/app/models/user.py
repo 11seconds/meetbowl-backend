@@ -7,7 +7,7 @@ from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from .timetable import TimeTable  # noqa: F401
-    from .color import Color
+    from .color import Color  # noqa: F401
 
 
 class User(Base):

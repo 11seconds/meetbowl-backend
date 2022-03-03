@@ -125,7 +125,7 @@ class CRUDScheduleblock(
         )
         return db_obj
 
-    def delete_all_by_user_id(self, db: Session, table_id: str, user_id: str):
+    def delete_all_by_user_id(self, db: Session, table_id: str, user_id: str) -> Any:
         db_obj = (
             db.query(self.model)
             .filter(self.model.table_id == table_id, self.model.user_id == user_id)
