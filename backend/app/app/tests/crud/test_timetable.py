@@ -1,12 +1,9 @@
-from pydoc import describe
-from turtle import title
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.schemas.timetable import TimeTableCreate, TimeTableUpdate
-from app.tests.utils.utils import random_lower_string
 from app.tests.utils.user import create_random_user
+from app.tests.utils.utils import random_lower_string
 
 
 def test_create_timetable_with_user_id(db: Session) -> None:

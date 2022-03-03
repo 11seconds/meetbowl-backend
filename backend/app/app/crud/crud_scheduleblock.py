@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
@@ -6,9 +6,9 @@ from sqlalchemy.orm import Session
 
 from app.core.security import create_uuid
 from app.crud.base import CRUDBase
+from app.models.color import Color
 from app.models.scheduleblock import ScheduleBlock
 from app.models.user import User
-from app.models.color import Color
 from app.schemas.scheduleblock import ScheduleBlockCreate, ScheduleBlockUpdate
 
 

@@ -1,6 +1,6 @@
 from typing import Generator
-import requests
 
+import requests
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.security.utils import get_authorization_scheme_param

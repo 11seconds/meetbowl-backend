@@ -1,16 +1,13 @@
-from pydoc import describe
-from fastapi import HTTPException
 import pytest
-
+from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import table
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.schemas.scheduleblock import ScheduleBlockCreate, ScheduleBlockUpdate
-from app.tests.utils.utils import random_lower_string
-from app.tests.utils.user import create_random_user
+from app.schemas.scheduleblock import ScheduleBlockCreate
 from app.tests.utils.timetable import create_random_timetable
+from app.tests.utils.user import create_random_user
+from app.tests.utils.utils import random_lower_string
 
 
 def test_create_scheduleblock_with_user_id(db: Session) -> None:

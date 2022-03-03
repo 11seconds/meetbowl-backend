@@ -1,16 +1,7 @@
-from datetime import timedelta
-from typing import Any, List
+from typing import List
 
-import requests
-from fastapi import APIRouter, Depends, HTTPException, WebSocket
+from fastapi import APIRouter, WebSocket
 from fastapi.responses import HTMLResponse
-from sqlalchemy.orm import Session
-
-from app import crud, models, schemas
-from app.api import deps
-from app.core import security
-from app.core.config import settings
-from app.models import scheduleblock
 
 router = APIRouter()
 
