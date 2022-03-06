@@ -34,9 +34,7 @@ def user_kakao(
         return access_token
 
     created_user = crud.user.create_by_kakao_id(
-        db,
-        kakao_id=kakao_user.get("id"),
-        nickname=kakao_user.get("properties").get("nickname"),
+        db, kakao_id=kakao_user.get("id"), nickname="",
     )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
