@@ -193,5 +193,62 @@ class CRUDScheduleblock(
 
         return db_obj
 
+    def create_time_by_user_id(
+        self, db: Session, table_id: str, user_id: str, start_time: int
+    ) -> List[ScheduleBlock]:
+        db_objs = [
+            ScheduleBlock(
+                id=create_uuid(),
+                table_id=table_id,
+                user_id=user_id,
+                start_time=start_time,
+                start_minute=0,
+                end_time=start_time,
+                end_minute=59,
+                day=day,
+            )
+            for day in range(7)
+        ]
+
+        db.add_all(db_objs)
+        db.commit()
+        db_obj = (
+            db.query(
+                self.model.id,
+                self.model.start_time,
+                self.model.start_minute,
+                self.model.end_time,
+                self.model.end_minute,
+                self.model.day,
+                self.model.label,
+                self.model.user_id,
+                self.model.table_id,
+                Color.hex.label("color"),
+                User.nickname,
+            )
+            .outerjoin(self.model.user)
+            .outerjoin(User.color)
+            .filter(self.model.table_id == table_id, User.id == user_id)
+            .all()
+        )
+        return db_obj
+
+    def delete_time_by_user_id(
+        self, db: Session, table_id: str, user_id: str, start_time: int
+    ) -> Any:
+        db_obj = (
+            db.query(self.model)
+            .filter(
+                self.model.table_id == table_id,
+                self.model.user_id == user_id,
+                self.model.start_time == start_time,
+            )
+            .delete()
+        )
+
+        db.commit()
+
+        return db_obj
+
 
 scheduleblock = CRUDScheduleblock(ScheduleBlock)
