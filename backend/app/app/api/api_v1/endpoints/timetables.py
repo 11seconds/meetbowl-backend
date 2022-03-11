@@ -9,6 +9,20 @@ from app.api import deps
 router = APIRouter()
 
 
+@router.get("/timetables", response_model=List[schemas.TimeTable])
+def get_my_timetables(
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    내가 만든 타임테이블 불러오기
+    """
+
+    timetables = crud.timetable.get_by_user_id(db, user_id=current_user.id)
+
+    return timetables
+
+
 @router.get("/timetables/{timetable_id}", response_model=schemas.TimeTable)
 def get_timetable_by_id(timetable_id: str, db: Session = Depends(deps.get_db)) -> Any:
     """
