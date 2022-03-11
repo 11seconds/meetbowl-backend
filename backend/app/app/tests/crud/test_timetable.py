@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app import crud
+from app.api.api_v1.endpoints.timetables import get_timetable_by_id
 from app.schemas.timetable import TimeTableCreate, TimeTableUpdate
 from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_lower_string
@@ -52,3 +53,20 @@ def test_get_timetable(db: Session) -> None:
     assert get_timetable
     assert get_timetable is not None
     assert get_timetable.title == timetable_db.title
+
+
+def test_get_timetables_by_user_id(db: Session) -> None:
+    user = create_random_user(db)
+    for _ in range(20):
+        title = random_lower_string()
+        description = random_lower_string()
+        timetable_in = TimeTableCreate(title=title, description=description)
+        timetable_db = crud.timetable.create_with_user_id(
+            db, obj_in=timetable_in, user_id=user.id
+        )
+
+    my_timetable = crud.timetable.get_by_user_id(db, user_id=user.id)
+
+    assert my_timetable is not None
+    assert len(my_timetable) == 20
+    assert my_timetable[0].create_user_id == user.id
