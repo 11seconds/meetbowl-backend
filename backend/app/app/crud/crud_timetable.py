@@ -21,5 +21,9 @@ class CRUDTimeTable(CRUDBase[TimeTable, TimeTableCreate, TimeTableUpdate]):
         db.refresh(db_obj)
         return db_obj
 
+    def get_by_user_id(self, db: Session, *, user_id: str) -> TimeTable:
+        db_obj = db.query(TimeTable).filter(TimeTable.create_user_id == user_id).all()
+        return db_obj
+
 
 timetable = CRUDTimeTable(TimeTable)
